@@ -1,6 +1,7 @@
 import { Transaction } from 'sequelize';
 import {
   sequelize,
+  User,
   Branch,
   Supplier,
   Product,
@@ -50,7 +51,7 @@ export async function workspaceState(user) {
   return sequelize.transaction(
     { isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ },
     async (transaction) => {
-      const [branches, suppliers, inventory, catalog, requests, items, orders, activity] =
+      const [branches, suppliers, inventory, catalog, requests, items, orders, activity, users] =
         await Promise.all([
           Branch.findAll({
             where: user.role === 'admin' ? {} : { id: user.branchId || -1 },
@@ -73,6 +74,13 @@ export async function workspaceState(user) {
             limit: 200,
             transaction,
           }),
+          user.role === 'admin'
+            ? User.findAll({
+                attributes: ['id', 'name', 'email', 'role', 'branchId'],
+                order: [['id', 'ASC']],
+                transaction,
+              })
+            : Promise.resolve([]),
         ]);
       const catalogMap = new Map(catalog.map((p) => [p.id, p]));
       const branchMap = new Map(branches.map((b) => [b.id, b.name]));
@@ -80,6 +88,7 @@ export async function workspaceState(user) {
       const orderMap = new Map(orders.map((o) => [o.requestId, o.id]));
       return {
         user: { id: user.id, name: user.name, role: user.role, branchId: user.branchId },
+        ...(user.role === 'admin' ? { users: users.map((account) => account.toJSON()) } : {}),
         branches: branches.map((b) => ({ id: b.id, name: b.name, location: b.location })),
         suppliers: suppliers.map((s) => ({ id: s.id, name: s.name })),
         products: inventory.map((inv) => {
@@ -119,6 +128,45 @@ export async function workspaceState(user) {
       };
     },
   );
+}
+
+export async function updateUserAccess(user, accountId, input) {
+  integer(accountId, 'Account ID', 1, 2147483647);
+  if (!['admin', 'staff', 'visitors'].includes(input.role))
+    throw new HttpError(422, 'Select a valid account role.');
+  if (accountId === user.id)
+    throw new HttpError(409, 'You cannot change your own administrator access.');
+  const branchId = input.branchId;
+  if (branchId !== null) integer(branchId, 'Branch ID', 1, 2147483647);
+  if (input.role === 'staff' && branchId === null)
+    throw new HttpError(422, 'Select a branch for this staff account.');
+  if (input.role === 'admin' && branchId !== null)
+    throw new HttpError(422, 'Administrators access all branches. Select All branches.');
+  return sequelize.transaction(async (transaction) => {
+    // Serialize administrator changes and recheck the acting account inside the transaction.
+    const administrators = await User.findAll({
+      where: { role: 'admin' },
+      order: [['id', 'ASC']],
+      ...options(transaction),
+    });
+    if (!administrators.some((account) => account.id === user.id))
+      throw new HttpError(403, 'Administrator access is required.');
+    const account = await User.findByPk(accountId, options(transaction));
+    if (!account) throw new HttpError(404, 'Account not found.');
+    const branch = branchId === null ? null : await Branch.findByPk(branchId, { transaction });
+    if (branchId !== null && !branch) throw new HttpError(422, 'Select an existing branch.');
+    const previousRole = account.role;
+    const previousBranchId = account.branchId;
+    account.role = input.role;
+    account.branchId = branchId;
+    await account.save({ transaction });
+    await log(
+      user,
+      branchId,
+      `Access updated for ${account.name}: ${previousRole}, branch ${previousBranchId ?? 'unassigned'} → ${account.role}, ${branch?.name || (account.role === 'admin' ? 'all branches' : 'unassigned')}`,
+      transaction,
+    );
+  });
 }
 
 export async function addInventory(user, input) {

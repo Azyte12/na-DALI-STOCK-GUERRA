@@ -40,12 +40,9 @@ Run `npm run migrate` after pulling this change. It adds adjustment fields and e
 - `staff`: requests, receiving and manual stock counts for their assigned branch, with read access to that branch.
 - `visitors`: read-only access to an assigned branch. Public registration creates this role without branch access.
 
-Administrators currently assign roles/branches directly in MySQL; a user-management screen is not included. For example, after looking up the correct branch ID:
+Administrators assign access in **Users → Edit access**. Select the account role and branch, then save. Staff require an assigned branch. Visitors can view their assigned branch but cannot write records; leaving them unassigned keeps access pending. Administrators have access to all branches. You cannot change your own administrator permissions from this screen. Access changes are recorded in the activity log, and account lists are only sent to administrators.
 
-```sql
-SELECT id, name FROM Branches;
-UPDATE Users SET role = 'staff', branchId = 1 WHERE email = 'staff@example.com';
-```
+If an account sees **Branch assignment pending**, an administrator must assign its branch in Users. Click **Refresh data** afterward; signing out is not required. Choosing a branch filter does not grant branch permissions.
 
 Permissions are reloaded from the database on every API request. Form and API writes require a session CSRF token. Sign out uses POST. Sessions last eight hours and survive an application restart. Expired sessions are deleted when accessed; scheduled cleanup can remove unused expired records.
 
@@ -72,4 +69,4 @@ Unit/UI tests verify API loading, filters, CSRF headers, failure handling and pa
 - `routes/api.js`: authenticated persistence endpoints.
 - `public/workspace.js`: dashboard and forms connected to the API.
 
-The schema follows the supplied DALIStock system diagrams. Draft/revision requests, a management/manager role hierarchy, multi-item request forms, user management, supplier communication and historical analytics remain future work. The current `admin` role performs approval duties. Brand colors approximate the magenta identity at https://dali.ph; they are not a published official brand specification.
+The schema follows the supplied DALIStock system diagrams. Draft/revision requests, a management/manager role hierarchy, multi-item request forms, supplier communication and historical analytics remain future work. The current `admin` role performs approval duties. Brand colors approximate the magenta identity at https://dali.ph; they are not a published official brand specification.

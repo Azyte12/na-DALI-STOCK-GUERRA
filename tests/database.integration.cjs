@@ -37,6 +37,13 @@ test('MySQL API persists the stock lifecycle, rejects unauthorized changes, and 
         role: 'visitors',
         branchId: a.id,
       },
+      { name: 'Pending staff', email: 'pending-staff@test.local', password: hashed, role: 'staff' },
+      {
+        name: 'Pending visitor',
+        email: 'pending-visitor@test.local',
+        password: hashed,
+        role: 'visitors',
+      },
     ]);
     const { startServer } = await import('../index.js');
     server = await startServer(0);
@@ -241,6 +248,105 @@ test('MySQL API persists the stock lifecycle, rejects unauthorized changes, and 
     );
     assert.equal(await m.StockMovement.count({ where: { type: 'Adjustment' } }), 3);
     assert.equal(await m.AuditLog.count(), 10);
+    const pendingStaff = await signIn('pending-staff@test.local');
+    const pendingVisitor = await signIn('pending-visitor@test.local');
+    const waiting = (await call('/workspace', undefined, pendingStaff)).data;
+    assert.equal(waiting.products.length, 0);
+    assert.equal(waiting.branches.length, 0);
+    assert.equal((await call('/workspace', undefined, pendingVisitor)).data.products.length, 0);
+    const accounts = (await call('/workspace')).data.users;
+    assert.ok(accounts.every((u) => !Object.hasOwn(u, 'password')));
+    const staffAccount = accounts.find((u) => u.email === 'pending-staff@test.local');
+    const visitorAccount = accounts.find((u) => u.email === 'pending-visitor@test.local');
+    const adminAccount = accounts.find((u) => u.role === 'admin');
+    assert.equal(
+      (await call(`/users/${staffAccount.id}/access`, { role: 'staff', branchId: a.id }, staff))
+        .status,
+      403,
+    );
+    assert.equal(
+      (await call(`/users/${staffAccount.id}/access`, { role: 'staff', branchId: a.id }, visitor))
+        .status,
+      403,
+    );
+    assert.equal(
+      (
+        await call(
+          `/users/${staffAccount.id}/access`,
+          { role: 'staff', branchId: a.id },
+          admin,
+          'invalid',
+        )
+      ).status,
+      403,
+    );
+    assert.equal(
+      (await call(`/users/${adminAccount.id}/access`, { role: 'staff', branchId: a.id })).status,
+      409,
+    );
+    assert.equal(
+      (await call(`/users/${staffAccount.id}/access`, { role: 'staff', branchId: null })).status,
+      422,
+    );
+    assert.equal(
+      (await call(`/users/${staffAccount.id}/access`, { role: 'staff', branchId: 99999 })).status,
+      422,
+    );
+    assert.equal(
+      (await call(`/users/${staffAccount.id}/access`, { role: 'owner', branchId: a.id })).status,
+      422,
+    );
+    assert.equal(
+      (await call(`/users/${staffAccount.id}/access`, { role: 'staff', branchId: a.id })).status,
+      200,
+    );
+    const assignedStaff = (await call('/workspace', undefined, pendingStaff)).data;
+    assert.equal(
+      assignedStaff.products.length,
+      1,
+      'existing staff session gains assigned inventory',
+    );
+    assert.equal(assignedStaff.branches[0].id, a.id);
+    assert.equal(Object.hasOwn(assignedStaff, 'users'), false);
+    assert.equal(
+      (await call(`/users/${visitorAccount.id}/access`, { role: 'visitors', branchId: b.id }))
+        .status,
+      200,
+    );
+    const assignedVisitor = (await call('/workspace', undefined, pendingVisitor)).data;
+    assert.equal(assignedVisitor.products.length, 1, 'visitor can read assigned branch');
+    assert.equal(assignedVisitor.products[0].branchId, b.id);
+    assert.equal(Object.hasOwn(assignedVisitor, 'users'), false);
+    assert.equal(
+      (
+        await call(
+          '/requests',
+          { productId: otherInventoryId, quantity: 2, supplier: 'Test supplier' },
+          pendingVisitor,
+        )
+      ).status,
+      403,
+    );
+    assert.equal(
+      (
+        await call(
+          '/requests',
+          { productId: otherInventoryId, quantity: 2, supplier: 'Test supplier' },
+          pendingStaff,
+        )
+      ).status,
+      403,
+    );
+    assert.equal(
+      (
+        await call(
+          '/requests',
+          { productId: inventoryId, quantity: 2, supplier: 'Test supplier' },
+          pendingStaff,
+        )
+      ).status,
+      201,
+    );
     // The same session and inventory survive a new HTTP listener.
     await new Promise((resolve) => server.close(resolve));
     server = await startServer(0);

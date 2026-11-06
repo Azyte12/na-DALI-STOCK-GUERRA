@@ -88,6 +88,32 @@ test('workspace loads API records and filters by branch and product', async () =
   assert.equal(app.nodes.get('#profile-name').textContent, 'Test Admin');
 });
 
+test('unassigned accounts see a pending notice; visitors see read-only access', async () => {
+  const app = await workspace();
+  app.run("state.user.role='staff';state.branches=[];current='overview';render()");
+  assert.match(app.nodes.get('#content').innerHTML, /Branch assignment pending/);
+  assert.equal(app.nodes.get('#new-request').hidden, true);
+  assert.doesNotMatch(app.nodes.get('#navigation').innerHTML, /href="#users"/);
+  app.run("state.user.role='visitors';state.branches=[{id:1,name:'Calapan'}];render()");
+  assert.match(app.nodes.get('#content').innerHTML, /Visitor access/);
+  assert.doesNotMatch(app.nodes.get('#content').innerHTML, /Branch assignment pending/);
+  app.run("current='users';render()");
+  assert.equal(app.run('current'), 'overview');
+});
+
+test('administrator can submit branch access assignments from Users', async () => {
+  const app = await workspace();
+  app.run(
+    "state.user.id=1;state.users=[{id:2,name:'New Staff',email:'staff@example.com',role:'staff',branchId:null}];current='users';render()",
+  );
+  assert.match(app.nodes.get('#content').innerHTML, /Pending branch assignment/);
+  assert.match(app.nodes.get('#navigation').innerHTML, /href="#users"/);
+  app.run('editUserAccess(2)');
+  await app.run("modalAction(new Map([['role','staff'],['branchId','1']]))");
+  const call = app.calls.find((c) => c.path === '/api/users/2/access');
+  assert.deepEqual(JSON.parse(call.options.body), { role: 'staff', branchId: 1 });
+});
+
 test('request saves use the API and CSRF token; rejected saves do not change displayed data', async () => {
   const app = await workspace();
   app.run('requestModal(2)');

@@ -14,6 +14,7 @@ import {
   createRequest,
   changeRequest,
   receiveDelivery,
+  updateUserAccess,
 } from '../services/inventoryService.js';
 const api = express.Router();
 api.use(requireUser);
@@ -25,6 +26,14 @@ api.get(
   }),
 );
 api.use(checkCsrf, requireWriter);
+api.post(
+  '/users/:id/access',
+  requireAdmin,
+  asyncHandler(async (req, res) => {
+    await updateUserAccess(req.user, Number(req.params.id), req.body);
+    res.json({ message: 'Account access updated. The user can refresh their workspace.' });
+  }),
+);
 api.post(
   '/inventory',
   requireAdmin,

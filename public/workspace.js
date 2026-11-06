@@ -13,6 +13,8 @@ const icons = {
   alert: 'm12 3 10 18H2L12 3M12 9v5M12 17h.01',
   check: 'm5 12 4 4L19 6',
   clock: 'M12 8v5l3 2M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',
+  users:
+    'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M13 3a4 4 0 0 1 0 8M20 21v-2a4 4 0 0 0-3-3.87M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
 };
 const icon = (name) => /* HTML */ `
   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -96,7 +98,9 @@ async function loadWorkspace() {
   render();
 }
 function canWrite() {
-  return ['admin', 'staff'].includes(state.user?.role);
+  return (
+    state.user?.role === 'admin' || (state.user?.role === 'staff' && state.branches.length > 0)
+  );
 }
 async function persist(path, body) {
   const result = await api(path, body);
@@ -163,10 +167,16 @@ const pages = {
     'Every movement has a story.',
     'Follow recorded changes across your accessible branches.',
   ],
+  users: [
+    'Users',
+    'The right access for every account.',
+    'Assign branch access and roles to your team.',
+  ],
 };
 function navigation() {
   let pending = state.requests.filter((r) => r.status === 'Pending approval').length;
   $('#navigation').innerHTML = Object.entries(pages)
+    .filter(([key]) => key !== 'users' || state.user?.role === 'admin')
     .map(
       ([key, [label]], i) => /* HTML */ `
         ${i === 5 ? '<div class="nav-divider"></div>' : ''}
@@ -190,7 +200,7 @@ function navigation() {
     .join('');
 }
 function badge(label) {
-  let style = ['In stock', 'Completed', 'Approved'].includes(label)
+  let style = ['In stock', 'Completed', 'Approved', 'Active'].includes(label)
     ? 'success'
     : ['Out of stock', 'Rejected'].includes(label)
       ? 'danger'
@@ -711,16 +721,148 @@ function auditView() {
     </section>
   `;
 }
+const roleLabel = (role) =>
+  ({ admin: 'Administrator', staff: 'Branch staff', visitors: 'Visitor (read-only)' })[role] ||
+  role;
+function usersView() {
+  return /* HTML */ `
+    <section class="panel table-panel">
+      <div class="panel-heading">
+        <div>
+          <h2>Team access</h2>
+          <p>Staff and visitors need a branch assignment to view inventory.</p>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Role</th>
+              <th>Branch access</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(state.users || [])
+              .map((account) => {
+                const assignedBranch = state.branches.find((b) => b.id === account.branchId);
+                const pending = account.role !== 'admin' && !assignedBranch;
+                return /* HTML */ `
+                  <tr>
+                    <td>
+                      <div class="product-cell">
+                        <div>
+                          <strong>${escapeHTML(account.name)}</strong>
+                          <small>${escapeHTML(account.email)}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>${roleLabel(account.role)}</td>
+                    <td>
+                      ${account.role === 'admin' ? 'All branches' : escapeHTML(assignedBranch?.name || 'Not assigned')}
+                    </td>
+                    <td>${badge(pending ? 'Pending branch assignment' : 'Active')}</td>
+                    <td>
+                      ${
+                        account.id === state.user.id
+                          ? 'Your account'
+                          : /* HTML */ `
+                              <button class="row-action" data-access="${account.id}">
+                                Edit access
+                              </button>
+                            `
+                      }
+                    </td>
+                  </tr>
+                `;
+              })
+              .join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  `;
+}
+function accessNotice() {
+  if (state.user?.role !== 'admin' && !state.branches.length) {
+    return '<p class="read-only-note" role="status"><strong>Branch assignment pending.</strong> Your account is signed in, but no branch has been assigned. Ask an administrator to open Users and assign your branch, then click Refresh data.</p>';
+  }
+  if (state.user?.role === 'visitors') {
+    return '<p class="read-only-note">Visitor access: you can view inventory, requests and activity for your assigned branch. Editing requires a staff or administrator account.</p>';
+  }
+  return '';
+}
+function editUserAccess(id) {
+  if (state.user?.role !== 'admin') return;
+  const account = (state.users || []).find((account) => account.id === Number(id));
+  if (!account || account.id === state.user.id) return;
+  showModal(
+    'Edit account access',
+    '<p class="form-note">' +
+      escapeHTML(account.name) +
+      '<br>' +
+      escapeHTML(account.email) +
+      '</p>' +
+      field(
+        'Role',
+        '<select name="role" id="access-role">' +
+          ['visitors', 'staff', 'admin']
+            .map(
+              (role) =>
+                '<option value="' +
+                role +
+                '" ' +
+                (account.role === role ? 'selected' : '') +
+                '>' +
+                roleLabel(role) +
+                '</option>',
+            )
+            .join('') +
+          '</select>',
+      ) +
+      field(
+        'Branch',
+        '<select name="branchId" id="access-branch"><option value="">' +
+          (account.role === 'admin' ? 'All branches' : 'No branch — pending access') +
+          '</option>' +
+          state.branches
+            .map(
+              (b) =>
+                '<option value="' +
+                b.id +
+                '" ' +
+                (account.branchId === b.id ? 'selected' : '') +
+                '>' +
+                escapeHTML(b.name) +
+                '</option>',
+            )
+            .join('') +
+          '</select>',
+      ) +
+      '<p class="form-note">Staff can update their assigned branch. Visitors can only view it. Administrators access all branches. Changes take effect on the user’s next refresh.</p>',
+    'Save access',
+    (data) =>
+      persist('/api/users/' + account.id + '/access', {
+        role: data.get('role'),
+        branchId:
+          data.get('role') === 'admin' || !data.get('branchId')
+            ? null
+            : Number(data.get('branchId')),
+      }),
+  );
+}
 function render() {
+  if (current === 'users' && state.user?.role !== 'admin') current = 'overview';
+  $('#new-request').hidden = !canWrite() || current === 'users';
   navigation();
   const [label, title, description] = pages[current];
   $('#breadcrumb').textContent = label;
   $('#page-title').textContent = title;
   $('#page-description').textContent = description;
   $('#content').innerHTML =
-    (!canWrite()
-      ? '<p class="read-only-note">Read-only access. Ask your administrator to assign a branch and staff permissions.</p>'
-      : '') +
+    accessNotice() +
     (current === 'overview'
       ? overview()
       : current === 'inventory'
@@ -738,7 +880,9 @@ function render() {
             ? branchesView()
             : current === 'reports'
               ? reportsView()
-              : auditView());
+              : current === 'users'
+                ? usersView()
+                : auditView());
 }
 let modalAction = null;
 function showModal(title, body, submit, action) {
@@ -978,6 +1122,7 @@ document.addEventListener('click', (event) => {
   if (!target) return;
   const d = target.dataset;
   if (d.request) requestModal(d.request);
+  else if (d.access) editUserAccess(d.access);
   else if (d.adjust) adjustStockModal(d.adjust);
   else if (d.approve) transition(d.approve, 'Pending approval', 'Approved');
   else if (d.reject) transition(d.reject, 'Pending approval', 'Rejected');
