@@ -1,12 +1,61 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#e6007e"><title>{{title}}</title><link rel="stylesheet" href="/workspace.css?v=database"></head>
-<body class="auth-page"><main class="auth-card panel"><a class="auth-brand" href="/">DALI<span>Stock</span></a><div class="eyebrow">YOUR INVENTORY WORKSPACE</div>
-<h1>{{#if register}}Create your account.{{else}}Welcome back.{{/if}}</h1><p class="auth-description">{{#if register}}New accounts have read-only access. Your administrator assigns branch access.{{else}}Sign in to manage your branch inventory.{{/if}}</p>
-{{#if error}}<p class="auth-error" role="alert">{{error}}</p>{{/if}}
-<form method="post" action="{{#if register}}/register{{else}}/login{{/if}}"><input type="hidden" name="_csrf" value="{{csrfToken}}">
-{{#if register}}<label class="form-field">Full name<input name="name" autocomplete="name" maxlength="80" required></label>{{/if}}
-<label class="form-field">Email address<input type="email" name="email" autocomplete="username" maxlength="254" required></label>
-<label class="form-field">Password<input type="password" name="password" autocomplete="{{#if register}}new-password{{else}}current-password{{/if}}" {{#if register}}minlength="12"{{/if}} maxlength="128" required></label>
-<button class="button primary" type="submit">{{#if register}}Create account{{else}}Sign in{{/if}} →</button></form>
-<p class="auth-link">{{#if register}}Already registered? <a href="/login">Sign in</a>{{else}}New to DALIStock? <a href="/register">Create an account</a>{{/if}}</p>
-</main></body></html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#e6007e" />
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/workspace.css?v=readable-stock" />
+  </head>
+  <body class="auth-page">
+    <main class="auth-card panel">
+      <a class="auth-brand" href="/">
+        DALI
+        <span>Stock</span>
+      </a>
+      <div class="eyebrow">YOUR INVENTORY WORKSPACE</div>
+      <h1>{{#if register}}Create your account.{{else}}Welcome back.{{/if}}</h1>
+      <p class="auth-description">
+        {{#if register}}New accounts have read-only access. Your administrator assigns branch
+        access.{{else}}Sign in to manage your branch inventory.{{/if}}
+      </p>
+      {{#if error}}
+      <p class="auth-error" role="alert">{{error}}</p>
+      {{/if}}
+      <form method="post" action="{{#if register}}/register{{else}}/login{{/if}}">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+        {{#if register}}
+        <label class="form-field">
+          Full name
+          <input name="name" autocomplete="name" maxlength="80" required />
+        </label>
+        {{/if}}
+        <label class="form-field">
+          Email address
+          <input type="email" name="email" autocomplete="username" maxlength="254" required />
+        </label>
+        <label class="form-field">
+          Password
+          <input
+            type="password"
+            name="password"
+            autocomplete="{{#if register}}new-password{{else}}current-password{{/if}}"
+            minlength="{{#if register}}12{{else}}1{{/if}}"
+            maxlength="128"
+            required
+          />
+        </label>
+        <button class="button primary" type="submit">
+          {{#if register}}Create account{{else}}Sign in{{/if}} →
+        </button>
+      </form>
+      <p class="auth-link">
+        {{#if register}}Already registered?
+        <a href="/login">Sign in</a>
+        {{else}}New to DALIStock?
+        <a href="/register">Create an account</a>
+        {{/if}}
+      </p>
+    </main>
+  </body>
+</html>

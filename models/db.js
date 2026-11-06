@@ -1,5 +1,4 @@
-
-      /*
+/*
     MIT License
     
     Copyright (c) 2025 Christian I. Cabrera || XianFire Framework
@@ -23,16 +22,16 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
     */
-    
-import { Sequelize } from "sequelize";
+
+import { Sequelize } from 'sequelize';
 import { databaseConfig as db } from '../config/env.js';
 
 export const sequelize = new Sequelize(db.database, db.user, db.password, {
   host: db.host,
   port: db.port,
-  dialect: "mysql",
+  dialect: 'mysql',
   logging: false,
   define: { charset: 'utf8mb4', collate: 'utf8mb4_unicode_ci' },
   dialectOptions: { connectTimeout: 5000 },
-  pool: { max: 10, min: 0, acquire: 10000, idle: 10000 }
+  pool: { max: 10, min: 0, acquire: 10000, idle: 10000 },
 });

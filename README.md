@@ -26,10 +26,18 @@ Requests progress from pending approval to approved/rejected, ordered, partially
 
 Changes become visible to other signed-in browsers when they reload or click **Refresh data**. Database errors are shown; the UI never silently switches to sample/browser data. Old `dalistock-v1` localStorage data is not imported automatically and remains untouched.
 
+### Manual stock counts
+
+In **Inventory**, select a branch and click **Edit stock** beside a product. Enter the actual remaining quantity and a reason (for example daily sales count, damaged goods, or a count correction). Administrators can adjust any branch; staff can adjust only their assigned branch. Read-only accounts cannot adjust stock. Zero is allowed; negative and fractional counts are rejected.
+
+The system saves the new balance, a signed stock movement, before/after quantities, reason and user activity in one transaction. Retries of the same adjustment do not create duplicates. If stock changes after the form is opened, close the form, refresh inventory, and reopen it to use the latest count. Stock alerts and inventory value recalculate after saving. Use **Receiving** to record purchase-order deliveries; manual stock counts do not change ordered or received quantities. There is currently no POS integration to deduct sales automatically.
+
+Run `npm run migrate` after pulling this change. It adds adjustment fields and expands the movement type enum while preserving existing stock and history.
+
 ## Account access
 
 - `admin`: all branches; inventory creation, approvals, purchase orders, requests and receiving.
-- `staff`: requests and receiving for their assigned branch, with read access to that branch.
+- `staff`: requests, receiving and manual stock counts for their assigned branch, with read access to that branch.
 - `visitors`: read-only access to an assigned branch. Public registration creates this role without branch access.
 
 Administrators currently assign roles/branches directly in MySQL; a user-management screen is not included. For example, after looking up the correct branch ID:

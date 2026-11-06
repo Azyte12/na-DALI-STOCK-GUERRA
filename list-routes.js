@@ -29,30 +29,30 @@ SOFTWARE.
  * Prints all registered Express routes in a formatted table.
  */
 
-import express from "express";
+import express from 'express';
 
 const app = express();
-const router = (await import("./routes/index.js")).default;
-app.use("/", router);
+const router = (await import('./routes/index.js')).default;
+app.use('/', router);
 
 const routes = [];
 
-const walk = (stack, prefix = "") => {
+const walk = (stack, prefix = '') => {
   for (const layer of stack) {
     if (layer.route) {
-      const methods = Object.keys(layer.route.methods).map(m => m.toUpperCase());
+      const methods = Object.keys(layer.route.methods).map((m) => m.toUpperCase());
       const fullPath = prefix + layer.route.path;
       const handler = layer.route.stack
-        .map(s => (s.handle && s.handle.name) || "anonymous")
-        .join(" → ");
-      routes.push({ methods: methods.join(", "), path: fullPath, handler });
-    } else if (layer.name === "router" && layer.handle && layer.handle.stack) {
+        .map((s) => (s.handle && s.handle.name) || 'anonymous')
+        .join(' → ');
+      routes.push({ methods: methods.join(', '), path: fullPath, handler });
+    } else if (layer.name === 'router' && layer.handle && layer.handle.stack) {
       const mountPath = layer.regexp.source
-        .replace(/^\//, "")
-        .replace(/\.\*\*\/?\$/g, "")
-        .replace(/\//g, "")
+        .replace(/^\//, '')
+        .replace(/\.\*\*\/?\$/g, '')
+        .replace(/\//g, '')
         .trim();
-      walk(layer.handle.stack, prefix + (mountPath || ""));
+      walk(layer.handle.stack, prefix + (mountPath || ''));
     }
   }
 };
@@ -60,16 +60,16 @@ const walk = (stack, prefix = "") => {
 walk(app._router.stack);
 
 // ── Pretty Print ──────────────────────────────────────────────────────────────
-console.log("\n");
-console.log("╔══════════════════════════════════════════════════════════════════╗");
-console.log("║           🔥 XianFire — Registered Routes                        ║");
-console.log("╠══════════════════════════════════════════════════════════════════╣");
+console.log('\n');
+console.log('╔══════════════════════════════════════════════════════════════════╗');
+console.log('║           🔥 XianFire — Registered Routes                        ║');
+console.log('╠══════════════════════════════════════════════════════════════════╣');
 
 if (routes.length === 0) {
-  console.log("║  (no routes found)                                               ║");
+  console.log('║  (no routes found)                                               ║');
 } else {
-  const methodWidth = Math.max(...routes.map(r => r.methods.length), 7);
-  const pathWidth = Math.max(...routes.map(r => r.path.length), 4);
+  const methodWidth = Math.max(...routes.map((r) => r.methods.length), 7);
+  const pathWidth = Math.max(...routes.map((r) => r.path.length), 4);
 
   routes.forEach((r, i) => {
     const line = String(i + 1).padStart(3);
@@ -80,7 +80,7 @@ if (routes.length === 0) {
   });
 }
 
-console.log("╚══════════════════════════════════════════════════════════════════╝");
+console.log('╚══════════════════════════════════════════════════════════════════╝');
 console.log(`\n   Total: ${routes.length} route(s) registered\n\n`);
 
 process.exit(0);

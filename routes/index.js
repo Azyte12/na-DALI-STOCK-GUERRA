@@ -1,5 +1,4 @@
-
-  /*
+/*
     MIT License
     
     Copyright (c) 2025 Christian I. Cabrera || XianFire Framework
@@ -23,21 +22,29 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
     */
-    
-import express from "express";
-import { homePage } from "../controllers/homeController.js";
+
+import express from 'express';
+import { homePage } from '../controllers/homeController.js';
 import { requireUser, asyncHandler, checkCsrf } from '../middleware/workspaceAuth.js';
 const router = express.Router();
-router.get("/", requireUser, homePage);
+router.get('/', requireUser, homePage);
 
-import { loginPage, registerPage, forgotPasswordPage, dashboardPage, loginUser, registerUser, logoutUser } from "../controllers/authController.js";
+import {
+  loginPage,
+  registerPage,
+  forgotPasswordPage,
+  dashboardPage,
+  loginUser,
+  registerUser,
+  logoutUser,
+} from '../controllers/authController.js';
 
-router.get("/login", loginPage);
-router.post("/login", checkCsrf, asyncHandler(loginUser));
-router.get("/register", registerPage);
-router.post("/register", checkCsrf, asyncHandler(registerUser));
-router.get("/forgot-password", forgotPasswordPage);
-router.get("/dashboard", requireUser, dashboardPage);
-router.post("/logout", checkCsrf, asyncHandler(logoutUser));
+router.get('/login', loginPage);
+router.post('/login', checkCsrf, asyncHandler(loginUser));
+router.get('/register', registerPage);
+router.post('/register', checkCsrf, asyncHandler(registerUser));
+router.get('/forgot-password', forgotPasswordPage);
+router.get('/dashboard', requireUser, dashboardPage);
+router.post('/logout', checkCsrf, asyncHandler(logoutUser));
 
 export default router;

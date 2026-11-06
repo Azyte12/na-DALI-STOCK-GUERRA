@@ -24,40 +24,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { execSync } from "child_process";
-import path from "path";
-import { fileURLToPath } from "url";
+import { execSync } from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const projectRoot = path.join(__dirname, "..");
+const projectRoot = path.join(__dirname, '..');
 
 const args = process.argv.slice(2);
-const command = args[0] || "start";
+const command = args[0] || 'start';
 const rest = args.slice(1);
 
 // Map short aliases to full script names
 const aliases = {
-  "": "start",
-  "s": "start",
-  "start": "start",
-  "d": "dev",
-  "dev": "dev",
-  "m": "migrate",
-  "migrate": "migrate",
-  "t": "test",
-  "test": "test",
-  "b": "build",
-  "build": "build",
-  "r": "run",
-  "run": "run",
-  "dist": "dist",
+  '': 'start',
+  s: 'start',
+  start: 'start',
+  d: 'dev',
+  dev: 'dev',
+  m: 'migrate',
+  migrate: 'migrate',
+  t: 'test',
+  test: 'test',
+  b: 'build',
+  build: 'build',
+  r: 'run',
+  run: 'run',
+  dist: 'dist',
 };
 
 const script = aliases[command] || command;
-const fullCmd = `npm run ${script}${rest.length ? " " + rest.join(" ") : ""}`;
+const fullCmd = `npm run ${script}${rest.length ? ' ' + rest.join(' ') : ''}`;
 
-if (command === "--help" || command === "-h" || command === "help") {
+if (command === '--help' || command === '-h' || command === 'help') {
   console.log(`
 🔥 XianFire CLI
 
@@ -99,7 +99,7 @@ Examples:
 }
 
 try {
-  execSync(fullCmd, { cwd: projectRoot, stdio: "inherit" });
+  execSync(fullCmd, { cwd: projectRoot, stdio: 'inherit' });
 } catch (e) {
   process.exit(e.status || 1);
 }

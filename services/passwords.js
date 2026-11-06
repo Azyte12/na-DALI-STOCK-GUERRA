@@ -9,7 +9,8 @@ export async function hashPassword(password) {
 export async function verifyPassword(password, stored) {
   if (stored.startsWith('scrypt$')) {
     const [, salt, hash] = stored.split('$');
-    const expected = Buffer.from(hash, 'hex'), actual = await scrypt(password, salt, 64);
+    const expected = Buffer.from(hash, 'hex'),
+      actual = await scrypt(password, salt, 64);
     return expected.length === actual.length && timingSafeEqual(expected, actual);
   }
   if (stored.startsWith('$2')) {

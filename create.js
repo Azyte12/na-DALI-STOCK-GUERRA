@@ -74,7 +74,7 @@ const toPascalCase = (str) => {
   return str
     .replace(/[^a-zA-Z0-9]/g, ' ')
     .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join('');
 };
 
@@ -190,7 +190,8 @@ export { ${camelName} };
 };
 
 // ─── Middleware (auth / role guards) ────────────────────────────────────────
-const USER_ROLE_FIELD = 'role: { type: DataTypes.ENUM("admin", "staff", "visitors"), allowNull: false, defaultValue: "visitors" }';
+const USER_ROLE_FIELD =
+  'role: { type: DataTypes.ENUM("admin", "staff", "visitors"), allowNull: false, defaultValue: "visitors" }';
 
 // Ensure models/userModel.js declares the "role" ENUM column (Sequelize models only).
 // Idempotent: an existing "role" field is never duplicated or overwritten.
@@ -201,7 +202,9 @@ const ensureUserRole = async () => {
   try {
     source = await fs.readFile(userModelPath, 'utf-8');
   } catch {
-    console.log('⚠️  models/userModel.js not found — skipped the "role" column. Generate the model first: npm run create:model User');
+    console.log(
+      '⚠️  models/userModel.js not found — skipped the "role" column. Generate the model first: npm run create:model User',
+    );
     return;
   }
 
@@ -212,7 +215,9 @@ const ensureUserRole = async () => {
 
   const defineIndex = source.indexOf('sequelize.define(');
   if (defineIndex === -1) {
-    console.log('ℹ️  models/userModel.js is not a Sequelize model — add the "role" column manually.');
+    console.log(
+      'ℹ️  models/userModel.js is not a Sequelize model — add the "role" column manually.',
+    );
     return;
   }
 
@@ -263,7 +268,8 @@ const createMiddleware = async (middlewareName) => {
   const camelName = toCamelCase(middlewareName); // e.g., auth
   // "auth" -> requireAuth, "admin" -> requireAdmin,
   // and an already-prefixed "requireAdmin" -> requireAdmin (never requireRequireAdmin)
-  const guardBase = toPascalCase(middlewareName.replace(/^require/i, '')) || toPascalCase(middlewareName);
+  const guardBase =
+    toPascalCase(middlewareName.replace(/^require/i, '')) || toPascalCase(middlewareName);
   const guardName = 'require' + guardBase;
   const middlewarePath = path.join(middlewareDir, `${camelName}.js`);
 
@@ -407,7 +413,9 @@ export const upload = multer({
     } else if (type === 'upload-middleware') {
       await createUploadMiddleware(name);
     } else {
-      console.error('❌ Unknown type. Use "model", "controller", "middleware", or "upload-middleware".');
+      console.error(
+        '❌ Unknown type. Use "model", "controller", "middleware", or "upload-middleware".',
+      );
       process.exit(1);
     }
   } catch (err) {

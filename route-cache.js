@@ -33,8 +33,8 @@ SOFTWARE.
  *   - Appends /api/cache/* routes to routes/index.js
  */
 
-import fs from "fs/promises";
-import path from "path";
+import fs from 'fs/promises';
+import path from 'path';
 
 const ensureDir = async (dir) => {
   try {
@@ -45,7 +45,7 @@ const ensureDir = async (dir) => {
 };
 
 // ── 1. Generate middleware/cache.js ──────────────────────────────────────────
-const middlewareDir = path.join(process.cwd(), "middleware");
+const middlewareDir = path.join(process.cwd(), 'middleware');
 await ensureDir(middlewareDir);
 
 const cacheMiddleware = `
@@ -89,7 +89,7 @@ export const cacheRoute = ({ ttl = 60000, keyPrefix = "", filter = null } = {}) 
     if (req.method !== "GET") return next();
     if (filter && !filter(req)) return next();
 
-    const cacheKey = `${keyPrefix}${req.originalUrl}`;
+    const cacheKey = keyPrefix + req.originalUrl;
     const cached = cacheStore.get(cacheKey);
 
     if (cached && Date.now() - cached.timestamp < ttl) {
@@ -157,11 +157,11 @@ cleanupInterval.unref();
 export { cacheStore };
 `;
 
-await fs.writeFile(path.join(middlewareDir, "cache.js"), cacheMiddleware);
-console.log("✅ middleware/cache.js created");
+await fs.writeFile(path.join(middlewareDir, 'cache.js'), cacheMiddleware);
+console.log('✅ middleware/cache.js created');
 
 // ── 2. Generate controllers/cacheController.js ───────────────────────────────
-const controllerDir = path.join(process.cwd(), "controllers");
+const controllerDir = path.join(process.cwd(), 'controllers');
 await ensureDir(controllerDir);
 
 const cacheController = `
@@ -208,27 +208,27 @@ const cacheController = {
   },
   clear: (req, res) => {
     const cleared = clearCache();
-    res.json({ success: true, message: `Cleared ${cleared} entries` });
+    res.json({ success: true, message: "Cleared " + cleared + " entries" });
   },
   clearByPrefix: (req, res) => {
     const { prefix } = req.params;
     const cleared = clearCache(prefix);
-    res.json({ success: true, message: `Cleared ${cleared} entries matching "${prefix}"` });
+    res.json({ success: true, message: 'Cleared ' + cleared + ' entries matching "' + prefix + '"' });
   }
 };
 
 export { cacheController };
 `;
 
-await fs.writeFile(path.join(controllerDir, "cacheController.js"), cacheController);
-console.log("✅ controllers/cacheController.js created");
+await fs.writeFile(path.join(controllerDir, 'cacheController.js'), cacheController);
+console.log('✅ controllers/cacheController.js created');
 
 // ── 3. Append cache routes to routes/index.js ────────────────────────────────
-const routesPath = path.join(process.cwd(), "routes/index.js");
-let routesContent = await fs.readFile(routesPath, "utf-8");
+const routesPath = path.join(process.cwd(), 'routes/index.js');
+let routesContent = await fs.readFile(routesPath, 'utf-8');
 
-if (routesContent.includes("cacheController")) {
-  console.log("⚠️  Cache routes already registered in routes/index.js — skipping.");
+if (routesContent.includes('cacheController')) {
+  console.log('⚠️  Cache routes already registered in routes/index.js — skipping.');
 } else {
   const cacheRoutesBlock = `
 // ── Cache Routes ──────────────────────────────────────────────────────────────
@@ -242,20 +242,20 @@ router.delete("/api/cache/:prefix", cacheController.clearByPrefix);
 
   routesContent = routesContent.replace(
     /export default router;/,
-    cacheRoutesBlock + "\nexport default router;"
+    cacheRoutesBlock + '\nexport default router;',
   );
 
   await fs.writeFile(routesPath, routesContent);
-  console.log("✅ Cache routes appended to routes/index.js");
+  console.log('✅ Cache routes appended to routes/index.js');
 }
 
-console.log("\n✅ Route cache setup complete!");
-console.log("   Endpoints available:");
-console.log("     GET    /api/cache/stats");
-console.log("     GET    /api/cache/keys");
-console.log("     GET    /api/cache/:key");
-console.log("     DELETE /api/cache");
-console.log("     DELETE /api/cache/:prefix");
-console.log("\n   To cache a specific route, add the middleware in your router:");
+console.log('\n✅ Route cache setup complete!');
+console.log('   Endpoints available:');
+console.log('     GET    /api/cache/stats');
+console.log('     GET    /api/cache/keys');
+console.log('     GET    /api/cache/:key');
+console.log('     DELETE /api/cache');
+console.log('     DELETE /api/cache/:prefix');
+console.log('\n   To cache a specific route, add the middleware in your router:');
 console.log('     import { cacheRoute } from "../middleware/cache.js";');
 console.log('     router.get("/your-route", cacheRoute({ ttl: 60000 }), handler);');

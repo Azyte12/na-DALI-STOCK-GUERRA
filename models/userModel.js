@@ -1,5 +1,4 @@
-
-      /*
+/*
     MIT License
     
     Copyright (c) 2025 Christian I. Cabrera || XianFire Framework
@@ -23,14 +22,18 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
     */
-import { DataTypes } from "sequelize";
-import { sequelize } from "./db.js";
+import { DataTypes } from 'sequelize';
+import { sequelize } from './db.js';
 
-export const User = sequelize.define("User", {
+export const User = sequelize.define('User', {
   name: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING, allowNull: false, unique: true },
   password: { type: DataTypes.STRING, allowNull: false },
   branchId: { type: DataTypes.INTEGER, allowNull: true },
-  role: { type: DataTypes.ENUM("admin", "staff", "visitors"), allowNull: false, defaultValue: "visitors" }
+  role: {
+    type: DataTypes.ENUM('admin', 'staff', 'visitors'),
+    allowNull: false,
+    defaultValue: 'visitors',
+  },
 });
-export { sequelize }; 
+export { sequelize };
