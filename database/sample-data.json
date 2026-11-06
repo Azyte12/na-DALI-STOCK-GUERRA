@@ -1,0 +1,191 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "sku": "DLI-001",
+      "name": "Golden Grains Rice",
+      "size": "5 kg · Bag",
+      "category": "Pantry essentials",
+      "emoji": "🌾",
+      "branch": "Calapan",
+      "stock": 12,
+      "reorder": 30,
+      "price": 245
+    },
+    {
+      "id": 2,
+      "sku": "DLI-002",
+      "name": "Daily Fresh Milk",
+      "size": "1 L · Carton",
+      "category": "Dairy & chilled",
+      "emoji": "🥛",
+      "branch": "Calapan",
+      "stock": 0,
+      "reorder": 24,
+      "price": 78
+    },
+    {
+      "id": 3,
+      "sku": "DLI-003",
+      "name": "Sarap Cooking Oil",
+      "size": "1 L · Bottle",
+      "category": "Pantry essentials",
+      "emoji": "🫒",
+      "branch": "Pinamalayan",
+      "stock": 18,
+      "reorder": 25,
+      "price": 92
+    },
+    {
+      "id": 4,
+      "sku": "DLI-004",
+      "name": "Morning Brew Coffee",
+      "size": "200 g · Pouch",
+      "category": "Beverages",
+      "emoji": "☕",
+      "branch": "Roxas",
+      "stock": 8,
+      "reorder": 20,
+      "price": 115
+    },
+    {
+      "id": 5,
+      "sku": "DLI-005",
+      "name": "Clean Home Detergent",
+      "size": "1 kg · Pack",
+      "category": "Household",
+      "emoji": "🧴",
+      "branch": "Calapan",
+      "stock": 14,
+      "reorder": 20,
+      "price": 89
+    },
+    {
+      "id": 6,
+      "sku": "DLI-006",
+      "name": "Everyday Corned Beef",
+      "size": "150 g · Can",
+      "category": "Pantry essentials",
+      "emoji": "🥫",
+      "branch": "Pinamalayan",
+      "stock": 180,
+      "reorder": 40,
+      "price": 39
+    },
+    {
+      "id": 7,
+      "sku": "DLI-007",
+      "name": "Fresh White Eggs",
+      "size": "12 pcs · Tray",
+      "category": "Dairy & chilled",
+      "emoji": "🥚",
+      "branch": "Roxas",
+      "stock": 65,
+      "reorder": 20,
+      "price": 99
+    },
+    {
+      "id": 8,
+      "sku": "DLI-008",
+      "name": "Pure Drinking Water",
+      "size": "1 L · Bottle",
+      "category": "Beverages",
+      "emoji": "💧",
+      "branch": "Calapan",
+      "stock": 240,
+      "reorder": 60,
+      "price": 18
+    },
+    {
+      "id": 9,
+      "sku": "DLI-009",
+      "name": "Classic Potato Chips",
+      "size": "100 g · Pack",
+      "category": "Snacks",
+      "emoji": "🥔",
+      "branch": "Roxas",
+      "stock": 96,
+      "reorder": 25,
+      "price": 35
+    },
+    {
+      "id": 10,
+      "sku": "DLI-010",
+      "name": "Soft White Bread",
+      "size": "400 g · Loaf",
+      "category": "Bakery",
+      "emoji": "🍞",
+      "branch": "Pinamalayan",
+      "stock": 48,
+      "reorder": 15,
+      "price": 48
+    },
+    {
+      "id": 11,
+      "sku": "DLI-011",
+      "name": "Everyday Bath Soap",
+      "size": "90 g · Bar",
+      "category": "Personal care",
+      "emoji": "🧼",
+      "branch": "Calapan",
+      "stock": 150,
+      "reorder": 30,
+      "price": 22
+    },
+    {
+      "id": 12,
+      "sku": "DLI-012",
+      "name": "Instant Noodles",
+      "size": "55 g · Pack",
+      "category": "Pantry essentials",
+      "emoji": "🍜",
+      "branch": "Roxas",
+      "stock": 320,
+      "reorder": 80,
+      "price": 9
+    }
+  ],
+  "requests": [
+    {
+      "id": "REQ-1001",
+      "productId": 1,
+      "quantity": 60,
+      "status": "Pending approval",
+      "supplier": "Mindoro Wholesale",
+      "received": 0
+    },
+    {
+      "id": "REQ-1002",
+      "productId": 4,
+      "quantity": 40,
+      "status": "Ordered",
+      "supplier": "Everyday Distributors",
+      "received": 0
+    },
+    {
+      "id": "REQ-1003",
+      "productId": 3,
+      "quantity": 50,
+      "status": "Approved",
+      "supplier": "Mindoro Wholesale",
+      "received": 0
+    }
+  ],
+  "activity": [
+    {
+      "text": "REQ-1001 submitted for manager approval",
+      "branch": "Calapan",
+      "time": "Sample activity"
+    },
+    {
+      "text": "PO-1002 created for Morning Brew Coffee",
+      "branch": "Roxas",
+      "time": "Sample activity"
+    },
+    {
+      "text": "Inventory review completed",
+      "branch": "Pinamalayan",
+      "time": "Sample activity"
+    }
+  ]
+}
